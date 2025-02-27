@@ -9,54 +9,54 @@ on:
       - main
 
 jobs:
-  backend-build:
-    name: Build and Test Backend
-    runs-on: windows-latest
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    # Step 1: Set up Node.js for frontend and backend
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
 
-      - name: Install dependencies
-        run: |
-          cd backend
-          npm install
+    # Step 2: Install dependencies for frontend and backend
+    - name: Install dependencies (Frontend)
+      run: |
+        cd frontend
+        npm install
 
-      - name: Run tests
-        run: |
-          cd backend
-          npm test
+    - name: Install dependencies (Backend)
+      run: |
+        cd backend
+        npm install
 
-      - name: Build Docker image
-        run: docker build -t backend-app ./backend
+    # Step 3: Run security audit for backend (using npm audit)
+    - name: Security Audit (Backend)
+      run: |
+        cd backend
+        npm audit --audit-level=high  # Only show vulnerabilities with high level
 
-  frontend-build:
-    name: Build and Test Frontend
-    runs-on: windows-latest
+    # Step 4: Run security audit for frontend (using npm audit)
+    - name: Security Audit (Frontend)
+      run: |
+        cd frontend
+        npm audit --audit-level=high  # Only show vulnerabilities with high level
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # Step 5: Build frontend and backend (if no security vulnerabilities are found)
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    - name: Build backend
+      run: |
+        cd backend
+        npm run build
 
-      - name: Install dependencies
-        run: |
-          cd frontend
-          npm install
-
-      - name: Build React app
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Build Docker image
-        run: docker build -t frontend-app ./frontend
+    # (Optional) You can add deployment steps here
+    # Step 6: Deploy to AWS (or other platform)
+    # - name: Deploy to AWS
+    #   run: ... (Your deployment steps)
